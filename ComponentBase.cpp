@@ -4,6 +4,11 @@
  * all components use.
  */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <assert.h>
+#include <errno.h>
+
 //Local
 #include "ComponentBase.h"
 
@@ -12,12 +17,25 @@ class RhsRobot;
 #include "RobotMessage.h"
 
 
+extern "C" {
+static void *StartTask(void *pComponentBase)
+{
+	((ComponentBase *)pComponentBase)->Task();
+	return(0);
+}
+}
+
 ComponentBase::ComponentBase(const char* componentName, const char *queueName, int priority)			//Constructor
 {	
 	pthread_attr_t attr;
-	struct sched_param schedparam;
+	//struct sched_param schedparam;
+
+	struct mq_attr base_msg_attr;
+
+	int iError;
 
 	iLoop = 0;
+	taskID = 0;
 
 	// set thread attributes to default values
     pthread_attr_init(&attr);
@@ -26,13 +44,31 @@ ComponentBase::ComponentBase(const char* componentName, const char *queueName, i
     // each thread has a unique scheduling algorithm
     pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     // we'll force the priority of threads or tasks
-    pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+    //pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
     // we'll use static real time priority levels
-    schedparam.sched_priority = priority;
-    pthread_attr_setschedparam(&attr, &schedparam);
+    //schedparam.sched_priority = priority;
+    //pthread_attr_setschedparam(&attr, &schedparam);
 
-    pthread_create(&taskID, &attr, StartTask, this);
-    msgqID = mq_open(queueName, O_CREAT | O_RDWR);
+    printf("Starting %s thread listening to %s queue\n", componentName, queueName);
+
+    iError = pthread_create(&taskID, &attr, StartTask, this);
+
+	if(iError)
+	{
+		printf("pthread_create: error = %d\n", iError);
+    	assert(iError == 0);
+    }
+
+    pthread_setname_np(taskID, componentName);
+
+    base_msg_attr.mq_flags = 0;
+    base_msg_attr.mq_maxmsg = 10;
+    base_msg_attr.mq_msgsize = sizeof(struct RobotMessage);
+    base_msg_attr.mq_curmsgs = 0;
+    msgqID = mq_open(queueName, O_CREAT | O_RDWR, 0666, &base_msg_attr);
+    printf("name is %s, msgqid = %08X, errno = %d\n", queueName, msgqID, errno);
+
+    ClearMessages();    // start fresh, no stale messages
 }
 
 ComponentBase::~ComponentBase()
@@ -88,14 +124,9 @@ void ComponentBase::ClearMessages(void)
 	localMessage.command = COMMAND_SYSTEM_MSGTIMEOUT;
 }
 
-void *ComponentBase::StartTask(void *pComponent)			//Entry point for component's task
-{
-	((ComponentBase *)pComponent)->Task();
-	return(0);
-}
-
 void ComponentBase::Task()			//The component's main function
 {
+	printf("calling init\n");
 	Init();			//Initialize the component
 
 	while(true)
@@ -108,6 +139,8 @@ void ComponentBase::Task()			//The component's main function
 				localMessage.command == COMMAND_ROBOT_STATE_TEST ||
 				localMessage.command == COMMAND_ROBOT_STATE_UNKNOWN)
 		{
+			printf("calling OnStateChange\n");
+
 			OnStateChange();			//Handles state changes
 		}
 

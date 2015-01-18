@@ -18,7 +18,7 @@ class Drivetrain : public ComponentBase
 {
 public:
 	Drivetrain();
-	virtual ~Drivetrain();
+	~Drivetrain();
 
 private:
 	Victor* leftMotor;
@@ -26,6 +26,8 @@ private:
 
 	float fLastLeft;
 	float fLastRight;
+
+	int iLoop;
 
 	void Init();
 	void OnStateChange();

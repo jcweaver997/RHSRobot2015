@@ -18,10 +18,10 @@ const char* const ROBOT_VERSION =	"-1.0.0-Alpha";			//Version
 //EXAMPLE: const int DRIVETRAIN_PRIORITY = DEFAULT_PRIORITY -2;
 const int DEFAULT_PRIORITY = 0;
 const int COMPONENT_PRIORITY = DEFAULT_PRIORITY;
-const int DRIVETRAIN_PRIORITY = DEFAULT_PRIORITY - 5;
-const int AUTONOMOUS_PRIORITY = DEFAULT_PRIORITY + 5;
-const int AUTOEXEC_PRIORITY = DEFAULT_PRIORITY + 5;
-const int AUTOPARSER_PRIORITY = DEFAULT_PRIORITY + 3;
+const int DRIVETRAIN_PRIORITY = DEFAULT_PRIORITY;
+const int AUTONOMOUS_PRIORITY = DEFAULT_PRIORITY;
+const int AUTOEXEC_PRIORITY = DEFAULT_PRIORITY;
+const int AUTOPARSER_PRIORITY = DEFAULT_PRIORITY;
 
 //Task Names - Used when you view the task list but used by the operating system
 //EXAMPLE: const char* DRIVETRAIN_TASKNAME = "tDrive";
@@ -41,7 +41,7 @@ const char* const AUTOPARSER_QUEUE 	= "/qParse";
 //PWM Channels - Assigns names to PWM ports 1-10 on the Digital Sidecar
 //EXAMPLE: const int PWM_DRIVETRAIN_FRONT_LEFT_MOTOR = 1;
 const int PWM_DRIVETRAIN_RIGHT_MOTOR = 0;
-const int PWM_DRIVETRAIN_LEFT_MOTOR = 0;
+const int PWM_DRIVETRAIN_LEFT_MOTOR = 1;
 
 //Relay Channels - Assigns names to Relay ports 1-8 on the Digital Sidecar
 //EXAMPLE: const int RLY_COMPRESSOR = 1;

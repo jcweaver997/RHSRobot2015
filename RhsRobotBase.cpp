@@ -17,7 +17,7 @@ RhsRobotBase::RhsRobotBase()			//Constructor
 {
 	printf("\n\t\t%s \"%s\"\n\tVersion %s built %s at %s\n\n", ROBOT_NAME, ROBOT_NICKNAME, ROBOT_VERSION, __DATE__, __TIME__);
 
-	previousRobotState = ROBOT_STATE_UNKNOWN;	//Initializes the robot states
+	previousRobotState = ROBOT_STATE_UNKNOWN;
 	currentRobotState = ROBOT_STATE_UNKNOWN;
 
 	loop = 0;			//Initializes the loop counter

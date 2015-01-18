@@ -21,10 +21,11 @@ class ComponentBase
 {
 public:
 	ComponentBase(const char* componentName, const char *queueName, int priority);
-	virtual ~ComponentBase();
+	~ComponentBase();
 
+	void Task();
 	void SendMessage(RobotMessage* robotMessage);
-	void ClearMessages(void);
+	void ClearMessages();
 
 	char* GetComponentName();
 	mqd_t GetMessageQueueID() { return(msgqID); };
@@ -45,8 +46,6 @@ private:
 	int iLoop;
 
 	void ReceiveMessage();
-	static void *StartTask(void *);
-	void Task();
 };
 
 #endif //COMPONENT_BASE_H

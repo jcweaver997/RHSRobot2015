@@ -61,6 +61,7 @@ void AutonomousBase::OnStateChange()	//Handles state changes
 	    pthread_attr_setschedparam(&attr, &schedparam);
 
 	    pthread_create(&iExecTaskID, &attr, RunAuto, this);
+	    pthread_setname_np(iExecTaskID, AUTOEXEC_TASKNAME);
 	}	
 	else if((localMessage.command == COMMAND_ROBOT_STATE_TELEOPERATED) ||
 			(localMessage.command == COMMAND_ROBOT_STATE_DISABLED))

@@ -14,6 +14,8 @@ RhsRobot::RhsRobot()
 	Controller_2 = NULL;
 	drivetrain = NULL; 
 	autonomous = NULL;
+
+	iLoop = 0;
 }
 
 RhsRobot::~RhsRobot()
@@ -34,11 +36,10 @@ void RhsRobot::Init()			//Initializes the robot
 	/* 
 	 * Set all pointers to null and then allocate memory and construct objects
 	 * EXAMPLE:	drivetrain = NULL;
-	 * 			drivetrain = new Drivetrain(this);
+	 * 			drivetrain = new Drivetrain();
 	 */
-
-	Controller_1 = new Joystick(1);
-	Controller_2 = new Joystick(2);
+	Controller_1 = new Joystick(0);
+	Controller_2 = new Joystick(1);
 	drivetrain = new Drivetrain(); 
 	autonomous = new Autonomous();
 }
@@ -89,6 +90,8 @@ void RhsRobot::Run()			//Robot logic
 		robotMessage.params.tankDrive.right = TANK_DRIVE_RIGHT;
 		drivetrain->SendMessage(&robotMessage);
 	}
+
+	iLoop++;
 }
 
 START_ROBOT_CLASS(RhsRobot)			//Spawns an instance of the RhsRobot class

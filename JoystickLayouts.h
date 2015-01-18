@@ -94,12 +94,12 @@
 #define L310_BUTTON_THUMB_LEFT		9
 #define L310_BUTTON_THUMB_RIGHT		10
 
-#define L310_THUMBSTICK_LEFT_X		1
-#define L310_THUMBSTICK_LEFT_Y		2
+#define L310_THUMBSTICK_LEFT_X		0
+#define L310_THUMBSTICK_LEFT_Y		1
 #define L310_THUMBSTICK_RIGHT_X		4
 #define L310_THUMBSTICK_RIGHT_Y		5
 
-#define L310_TRIGGER_LEFT			3	// value > 0
+#define L310_TRIGGER_LEFT			2	// value > 0
 #define L310_TRIGGER_RIGHT			3	// value < 0
 
 /* 

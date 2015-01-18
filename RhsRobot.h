@@ -28,6 +28,8 @@ private:
 	void Init();
 	void OnStateChange();
 	void Run();
+
+	int iLoop;
 };
 
 #endif //RHS_ROBOT_H

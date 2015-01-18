@@ -22,6 +22,8 @@ Drivetrain::Drivetrain()
 
 	leftMotor = NULL;
 	rightMotor = NULL;
+
+	iLoop = 0;
 };
 
 Drivetrain::~Drivetrain()			//Destructor
@@ -71,6 +73,9 @@ void Drivetrain::Run()
 	switch(localMessage.command)
 	{
 		case COMMAND_DRIVETRAIN_DRIVE_TANK:
+			if((iLoop % 100) == 0)
+				printf("left %f, right %f\n", localMessage.params.tankDrive.left,
+						localMessage.params.tankDrive.right);
 			TankDrive(pow(localMessage.params.tankDrive.left,3),
 					pow(localMessage.params.tankDrive.right,3));
 			break;
@@ -79,6 +84,8 @@ void Drivetrain::Run()
 		default:
 			break;
 	}
+
+	iLoop++;
 };
 
 void Drivetrain::TankDrive(float left, float right)			//Drive with tank drive behavior
