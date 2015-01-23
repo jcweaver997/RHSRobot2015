@@ -38,10 +38,19 @@ void RhsRobot::Init()			//Initializes the robot
 	 * EXAMPLE:	drivetrain = NULL;
 	 * 			drivetrain = new Drivetrain();
 	 */
+
 	Controller_1 = new Joystick(0);
 	Controller_2 = new Joystick(1);
-	drivetrain = new Drivetrain(); 
-	autonomous = new Autonomous();
+	usleep(1500);
+	drivetrain = new Drivetrain();
+	//autonomous = new Autonomous();
+
+	HALReport(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_Simple);
+	usleep(500);
+	SmartDashboard::init();
+	NetworkTable::GetTable("LiveWindow")->GetSubTable("~STATUS~")->PutBoolean("LW Enabled", false);
+
+	printf("Robot initialized\n");
 }
 
 void RhsRobot::OnStateChange()			//Handles state changes
@@ -86,12 +95,14 @@ void RhsRobot::Run()			//Robot logic
 
 	if(drivetrain)
 	{
+		printf("Left: %f, Right: %f \n", TANK_DRIVE_LEFT, TANK_DRIVE_RIGHT);
 		robotMessage.params.tankDrive.left = TANK_DRIVE_LEFT;
 		robotMessage.params.tankDrive.right = TANK_DRIVE_RIGHT;
 		drivetrain->SendMessage(&robotMessage);
 	}
 
 	iLoop++;
+	printf("Count: %d\n", iLoop);
 }
 
 START_ROBOT_CLASS(RhsRobot)			//Spawns an instance of the RhsRobot class

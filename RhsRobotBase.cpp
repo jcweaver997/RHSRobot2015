@@ -58,8 +58,10 @@ void RhsRobotBase::StartCompetition()			//Robot's main function
 		if(!pDS->IsNewControlData())
 		{
 			usleep(1000);
+			printf("No new data\n");
 			continue;
 		}
+		//pDS->WaitForData();
 
 		//Checks the current state of the robot
 		if(IsDisabled())

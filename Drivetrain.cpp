@@ -34,8 +34,10 @@ Drivetrain::~Drivetrain()			//Destructor
 
 void Drivetrain::Init()			//Initializes the drivetrain component
 {
+	printf("Starting Drivetrain init\n");
 	leftMotor = new Victor(PWM_DRIVETRAIN_LEFT_MOTOR);
 	rightMotor = new Victor(PWM_DRIVETRAIN_RIGHT_MOTOR);
+	printf("Drivetrain initialized\n");
 };
 
 void Drivetrain::OnStateChange()			//Handles state changes
@@ -81,9 +83,11 @@ void Drivetrain::Run()
 			break;
 
 		case COMMAND_SYSTEM_MSGTIMEOUT:
+			printf("DT: Timeout\n");
 		default:
 			break;
 	}
+	printf("DT: %i\n", iLoop);
 
 	iLoop++;
 };

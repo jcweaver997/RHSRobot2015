@@ -13,6 +13,10 @@
 #include <time.h>			 /* for timeout structure */
 #include <errno.h>
 #include <mqueue.h>		     /* for POSIX message queues */
+#include <stdio.h>
+
+#include <sys/socket.h>
+#include <sys/un.h>
 
 //Robot
 #include "RobotMessage.h"			//For the RobotMessage struct
@@ -35,7 +39,8 @@ public:
 protected:
 	RobotMessage localMessage;
 	
-	virtual void Init() = 0;			//Abstract function: initializes the component
+
+	virtual void Init() { printf("base\n"); }			//Abstract function: initializes the component
 	virtual void OnStateChange() = 0;	//Abstract function: handles state changes
 	virtual void Run() = 0;				//Abstract function: component logic
 
@@ -44,6 +49,8 @@ private:
 	mqd_t msgqID;
 	pthread_t taskID;
 	int iLoop;
+	sockaddr_un sock;
+	int sock_size;
 
 	void ReceiveMessage();
 };

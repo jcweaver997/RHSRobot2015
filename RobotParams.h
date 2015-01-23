@@ -33,10 +33,10 @@ const char* const AUTOPARSER_TASKNAME	= "tParse";
 
 //Queue Names - Used when you want to open the message queue for any task
 //EXAMPLE: const char* DRIVETRAIN_TASKNAME = "tDrive";
-const char* const COMPONENT_QUEUE 	= "/qComp";
-const char* const DRIVETRAIN_QUEUE 	= "/qDrive";
-const char* const AUTONOMOUS_QUEUE 	= "/qAuto";
-const char* const AUTOPARSER_QUEUE 	= "/qParse";
+const char* const COMPONENT_QUEUE 	= "qComp";
+const char* const DRIVETRAIN_QUEUE 	= "qDrive";
+const char* const AUTONOMOUS_QUEUE 	= "qAuto";
+const char* const AUTOPARSER_QUEUE 	= "qParse";
 
 //PWM Channels - Assigns names to PWM ports 1-10 on the Digital Sidecar
 //EXAMPLE: const int PWM_DRIVETRAIN_FRONT_LEFT_MOTOR = 1;
