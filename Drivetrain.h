@@ -5,6 +5,8 @@
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
+#include <pthread.h>
+
 //Robot
 #include "ComponentBase.h"			//For ComponentBase class
 
@@ -12,28 +14,25 @@
 #include "WPILib.h"
 
 const float JOYSTICK_DEADZONE = 0.10;
-const float GAIN_PER_MESSAGE = 0.1;
+const float MAX_GAIN_PER_MESSAGE = 0.1;
 
 class Drivetrain : public ComponentBase
 {
 public:
 	Drivetrain();
 	~Drivetrain();
-
+	static void *StartTask(void *pThis)
+	{
+		((Drivetrain *)pThis)->Task();
+		return(NULL);
+	}
 private:
-	Victor* leftMotor;
-	Victor* rightMotor;
+	pthread_t taskID;
+	CANTalon* leftMotor;
+	CANTalon* rightMotor;
 
-	float fLastLeft;
-	float fLastRight;
-
-	int iLoop;
-
-	void Init();
 	void OnStateChange();
 	void Run();
-
-	void TankDrive(float left, float right);
 };
 
 #endif			//DRIVETRAIN_H

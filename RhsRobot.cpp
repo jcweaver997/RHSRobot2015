@@ -14,6 +14,8 @@ RhsRobot::RhsRobot()
 	Controller_2 = NULL;
 	drivetrain = NULL; 
 	autonomous = NULL;
+	conveyor = NULL;
+    clicker = NULL;
 
 	iLoop = 0;
 }
@@ -27,8 +29,10 @@ RhsRobot::~RhsRobot()
 
 	delete Controller_1;
 	delete Controller_2;
-	delete autonomous;
+	//delete autonomous;
 	delete drivetrain;
+	delete conveyor;
+	delete clicker;
 }
 
 void RhsRobot::Init()			//Initializes the robot
@@ -38,19 +42,11 @@ void RhsRobot::Init()			//Initializes the robot
 	 * EXAMPLE:	drivetrain = NULL;
 	 * 			drivetrain = new Drivetrain();
 	 */
-
 	Controller_1 = new Joystick(0);
 	Controller_2 = new Joystick(1);
-	usleep(1500);
-	drivetrain = new Drivetrain();
+	drivetrain = new Drivetrain(); 
+	conveyor = new Conveyor();
 	//autonomous = new Autonomous();
-
-	HALReport(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_Simple);
-	usleep(500);
-	SmartDashboard::init();
-	NetworkTable::GetTable("LiveWindow")->GetSubTable("~STATUS~")->PutBoolean("LW Enabled", false);
-
-	printf("Robot initialized\n");
 }
 
 void RhsRobot::OnStateChange()			//Handles state changes
@@ -68,14 +64,20 @@ void RhsRobot::OnStateChange()			//Handles state changes
 		drivetrain->SendMessage(&robotMessage);
 	}
 
-	if(autonomous)
+	if(conveyor)
 	{
-		autonomous->SendMessage(&robotMessage);
+		conveyor->SendMessage(&robotMessage);
+	}
+
+	if(clicker)
+	{
+		clicker->SendMessage(&robotMessage);
 	}
 }
 
 void RhsRobot::Run()			//Robot logic
 {	
+	//SmartDashboard::PutString("ROBOT STATUS", "Running");
 	/* Poll for control data and send messages to each subsystem. Surround blocks with if(component) so entire components can be disabled
 	 * by commenting out their construction.
 	 * EXAMPLE: if(drivetrain) 
@@ -95,14 +97,36 @@ void RhsRobot::Run()			//Robot logic
 
 	if(drivetrain)
 	{
-		printf("Left: %f, Right: %f \n", TANK_DRIVE_LEFT, TANK_DRIVE_RIGHT);
+		robotMessage.command = COMMAND_DRIVETRAIN_DRIVE_TANK;
 		robotMessage.params.tankDrive.left = TANK_DRIVE_LEFT;
 		robotMessage.params.tankDrive.right = TANK_DRIVE_RIGHT;
 		drivetrain->SendMessage(&robotMessage);
 	}
 
+	if(conveyor)
+	{
+		if(CONVEYOR_FWD)
+		{
+			robotMessage.command = COMMAND_CONVEYOR_RUN_FWD;
+		}
+		else if(CONVEYOR_BCK)
+		{
+			robotMessage.command = COMMAND_CONVEYOR_RUN_BCK;
+		}
+		else
+		{
+			robotMessage.command = COMMAND_CONVEYOR_STOP;
+		}
+
+		conveyor->SendMessage(&robotMessage);
+	}
+
+	if(clicker)
+	{
+
+	}
+
 	iLoop++;
-	printf("Count: %d\n", iLoop);
 }
 
 START_ROBOT_CLASS(RhsRobot)			//Spawns an instance of the RhsRobot class

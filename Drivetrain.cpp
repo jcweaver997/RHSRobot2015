@@ -13,129 +13,97 @@
 #include <math.h>
 #include <assert.h>
 
+#include <string>
+#include <iostream>
+using namespace std;
 
-Drivetrain::Drivetrain()
-: ComponentBase(DRIVETRAIN_TASKNAME, DRIVETRAIN_QUEUE, DRIVETRAIN_PRIORITY)
-{
-	fLastLeft = 0.0;
-	fLastRight = 0.0;
+Drivetrain::Drivetrain() :
+		ComponentBase(DRIVETRAIN_TASKNAME, DRIVETRAIN_QUEUE,
+				DRIVETRAIN_PRIORITY) {
+	pthread_attr_t attr;
+	int iError;
 
-	leftMotor = NULL;
-	rightMotor = NULL;
+	taskID = 0;
+	leftMotor = new CANTalon(CAN_DRIVETRAIN_LEFT_MOTOR);
+	rightMotor = new CANTalon(CAN_DRIVETRAIN_RIGHT_MOTOR);
+	leftMotor->SetControlMode(CANSpeedController::kPercentVbus);
+	rightMotor->SetControlMode(CANSpeedController::kPercentVbus);
+	//leftMotor->SetVoltageRampRate(24.0);
+	//rightMotor->SetVoltageRampRate(24.0);
 
-	iLoop = 0;
-};
+
+	assert(leftMotor && rightMotor);
+
+	// set thread attributes to default values
+	pthread_attr_init(&attr);
+	// we do not wait for threads to exit
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	// each thread has a unique scheduling algorithm
+	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+	// we'll force the priority of threads or tasks
+	//pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+	// we'll use static real time priority levels
+	//schedparam.sched_priority = priority;
+	//pthread_attr_setschedparam(&attr, &schedparam);
+
+	printf("Starting %s thread listening to %s\n", DRIVETRAIN_TASKNAME,
+			DRIVETRAIN_QUEUE);
+
+	iError = pthread_create(&taskID, &attr, &Drivetrain::StartTask, this);
+
+	if (iError) {
+		printf("pthread_create: error = %d\n", iError);
+		assert(iError == 0);
+	}
+	pthread_setname_np(taskID, DRIVETRAIN_TASKNAME);
+}
 
 Drivetrain::~Drivetrain()			//Destructor
 {
+	pthread_cancel(taskID);
+
 	delete leftMotor;
 	delete rightMotor;
-};
-
-void Drivetrain::Init()			//Initializes the drivetrain component
-{
-	printf("Starting Drivetrain init\n");
-	leftMotor = new Victor(PWM_DRIVETRAIN_LEFT_MOTOR);
-	rightMotor = new Victor(PWM_DRIVETRAIN_RIGHT_MOTOR);
-	printf("Drivetrain initialized\n");
-};
+}
 
 void Drivetrain::OnStateChange()			//Handles state changes
 {
-	// reset the servos and stop the motors
+	switch (localMessage.command) {
+	case COMMAND_ROBOT_STATE_AUTONOMOUS:
+		break;
 
-	fLastLeft = 0.0;
-	fLastRight = 0.0;
+	case COMMAND_ROBOT_STATE_TEST:
+		break;
 
+	case COMMAND_ROBOT_STATE_TELEOPERATED:
+		break;
 
-	switch(localMessage.command)
-	{
-		case COMMAND_ROBOT_STATE_AUTONOMOUS:
-			break;
+	case COMMAND_ROBOT_STATE_DISABLED:
+		break;
 
-		case COMMAND_ROBOT_STATE_TEST:
-			break;
+	case COMMAND_ROBOT_STATE_UNKNOWN:
+		break;
 
-		case COMMAND_ROBOT_STATE_TELEOPERATED:
-			break;
-
-		case COMMAND_ROBOT_STATE_DISABLED:
-			break;
-
-		case COMMAND_ROBOT_STATE_UNKNOWN:
-			break;
-
-		default:
-			break;
+	default:
+		break;
 	}
 }
 
-void Drivetrain::Run()
-{
-	switch(localMessage.command)
-	{
-		case COMMAND_DRIVETRAIN_DRIVE_TANK:
-			if((iLoop % 100) == 0)
-				printf("left %f, right %f\n", localMessage.params.tankDrive.left,
-						localMessage.params.tankDrive.right);
-			TankDrive(pow(localMessage.params.tankDrive.left,3),
-					pow(localMessage.params.tankDrive.right,3));
-			break;
+void Drivetrain::Run() {
+	switch (localMessage.command) {
+	case COMMAND_DRIVETRAIN_DRIVE_TANK:
+		if ((GetLoop() % 100) == 0)
+			printf("left %f, right %f\n", localMessage.params.tankDrive.left,
+					localMessage.params.tankDrive.right);
+		leftMotor->Set(pow(localMessage.params.tankDrive.left, 3));
+		rightMotor->Set(-pow(localMessage.params.tankDrive.right, 3));
+		//TankDrive(pow(localMessage.params.tankDrive.left, 3),
+		//pow(localMessage.params.tankDrive.right, 3));
+		break;
 
-		case COMMAND_SYSTEM_MSGTIMEOUT:
-			printf("DT: Timeout\n");
-		default:
-			break;
+	case COMMAND_SYSTEM_MSGTIMEOUT:
+	default:
+		break;
 	}
-	printf("DT: %i\n", iLoop);
+}
 
-	iLoop++;
-};
-
-void Drivetrain::TankDrive(float left, float right)			//Drive with tank drive behavior
-{
-	if((left < JOYSTICK_DEADZONE) && (left > -JOYSTICK_DEADZONE))
-	{
-		// in the joystick dead zone
-
-		left = 0.0;
-	}
-	else
-	{
-		// limit the amount of change is speed per message
-		// so we don't destroy belts (or anything else)
-
-		if((left - fLastLeft) > GAIN_PER_MESSAGE)
-		{
-			left = fLastLeft + GAIN_PER_MESSAGE;
-		}
-		else if((left - fLastLeft) < -GAIN_PER_MESSAGE)
-		{
-			left = fLastLeft - GAIN_PER_MESSAGE;
-		}
-	}
-
-
-	if((right < JOYSTICK_DEADZONE) && (right > -JOYSTICK_DEADZONE))
-	{
-		// in the joystick dead zone
-
-		right = 0.0;
-	}
-	else
-	{
-		if((right - fLastRight) > GAIN_PER_MESSAGE)
-		{
-			right = fLastRight + GAIN_PER_MESSAGE;
-		}
-		else if((right - fLastRight) < -GAIN_PER_MESSAGE)
-		{
-			right = fLastRight - GAIN_PER_MESSAGE;
-		}
-	}
-
-	leftMotor->Set(-left);
-	rightMotor->Set(right);
-	fLastLeft = left;
-	fLastRight = right;
-};

@@ -5,10 +5,12 @@
  */
 
 #include <stdio.h>
-#include <stddef.h>
 #include <unistd.h>
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/select.h>
+#include <sys/types.h>
 
 //Local
 #include "ComponentBase.h"
@@ -17,127 +19,70 @@
 class RhsRobot;
 #include "RobotMessage.h"
 
-
-extern "C" {
-static void *StartTask(void *pComponentBase)
-{
-	((ComponentBase *)pComponentBase)->Task();
-	return(0);
-}
-}
-
-ComponentBase::ComponentBase(const char* componentName, const char *queueName, int priority)			//Constructor
+ComponentBase::ComponentBase(const char* componentName, const char *queueName, int priority)
 {	
-	pthread_attr_t attr;
-	//struct sched_param schedparam;
-
-	int iError;
-
 	iLoop = 0;
-	taskID = 0;
+	iPipeRcv = -1;
+	iPipeXmt = -1;
 
-	// set thread attributes to default values
-    pthread_attr_init(&attr);
-    // we do not wait for threads to exit
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    // each thread has a unique scheduling algorithm
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-    // we'll force the priority of threads or tasks
-    //pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-    // we'll use static real time priority levels
-    //schedparam.sched_priority = priority;
-    //pthread_attr_setschedparam(&attr, &schedparam);
-
-    printf("Starting %s thread listening to %s queue\n", componentName, queueName);
-
-    iError = pthread_create(&taskID, &attr, StartTask, this);
-
-	if(iError)
-	{
-		printf("pthread_create: error = %d\n", iError);
-    	assert(iError == 0);
-    }
-
-    pthread_setname_np(taskID, componentName);
-
-
-    msgqID = socket(PF_LOCAL,SOCK_DGRAM,0);
-    sock.sun_family = AF_UNIX;
-
-    strcpy(sock.sun_path,' ' + queueName);
-    sock.sun_path[0] = 0;
-
-    sock_size = (offsetof (struct sockaddr_un, sun_path)
-              + strlen (queueName) + 1);
-
-    printf("About to bind to %s \n",queueName);
-    int bind_err = bind(msgqID,(const sockaddr*) &sock,sock_size);
-
-    printf("name is %s, msgqid = %08X, errno = %d\n", queueName, msgqID, bind_err);
-
-    ClearMessages();    // start fresh, no stale messages
-}
-
-ComponentBase::~ComponentBase()
-{
-	pthread_cancel(taskID);
-	close(msgqID);
+	mkfifo(queueName, 0666);
+	queueLocal = queueName;
 }
 
 void ComponentBase::SendMessage(RobotMessage* robotMessage)
 {
 	RobotMessage message = *robotMessage;
-	sendto(msgqID, (char*)&message, sizeof(RobotMessage), 0, (sockaddr*)&sock, (uint)sock_size);
+
+	if(iPipeXmt < 0)
+	{
+		iPipeXmt = open(queueLocal.c_str(), O_WRONLY);
+		assert(iPipeXmt > 0);
+	}
+
+	write(iPipeXmt, (char*)&message, sizeof(RobotMessage));
 }
 
 void ComponentBase::ReceiveMessage()			//Receives a message and copies it into localMessage
 {
+	fd_set selectSet;
 	struct timeval timeout;
 
-	timeout.tv_sec = 10;
-	timeout.tv_usec = 0;
-	//timeout.tv_usec = 500000;
-	//timeout.tv_nsec = 50000000;
+	if(iPipeRcv < 0)
+	{
+		iPipeRcv = open(queueLocal.c_str(), O_RDONLY);
+		assert(iPipeRcv > 0);
+	}
 
-	fd_set queues;
-	FD_ZERO(&queues);
-	FD_SET(msgqID,&queues);
+	FD_ZERO(&selectSet);
+	FD_SET(iPipeRcv, &selectSet);
 
-	int val = select(1,&queues,NULL,NULL,&timeout);
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 100000;
 
-	if (val == 0 || val == -1)
+	if(select(iPipeRcv + 1, &selectSet, NULL, NULL, &timeout) == 0)
 	{
 		localMessage.command = COMMAND_SYSTEM_MSGTIMEOUT;
 	}
 	else
 	{
-		recvfrom(msgqID,(char*)&localMessage,sizeof(RobotMessage),0, (sockaddr*)&sock, (uint*)&sock_size);
+		read(iPipeRcv, (char*)&localMessage, sizeof(RobotMessage));
 	}
 }
 
 void ComponentBase::ClearMessages(void)
 {
 	RobotMessage eatMessage;
-	struct timeval timeout;
-
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
 	
 	// eat all the messages in the queue
-	fd_set queues;
-	FD_ZERO(&queues);
-	FD_SET(msgqID,&queues);
+	
+	fcntl(iPipeRcv, F_SETFL, O_NONBLOCK);
 
-	while(1)
+	while(read(iPipeRcv, (char*)&eatMessage, sizeof(RobotMessage)) > 0)
 	{
-		int val = select(1,&queues,NULL,NULL,&timeout);
-		if (val != -1 && val != 1)
-		{
-			printf("Queue cleared!\n");
-			break;
-		}
-		recvfrom(msgqID,(char*)&eatMessage,sizeof(RobotMessage),0, (sockaddr*)&sock, (uint*)&sock_size);
+		// intentionally empty
 	}
+
+	fcntl(iPipeRcv, F_SETFL, 0);
 
 	// make sure the localMessage is innocuous
 	
@@ -146,9 +91,10 @@ void ComponentBase::ClearMessages(void)
 
 void ComponentBase::Task()			//The component's main function
 {
-	printf("calling init\n");
-	Init();			//Initialize the component
-	printf("Init done");
+	int iLast;
+
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &iLast);
+
 	while(true)
 	{
 		ReceiveMessage();		//Receives a message and copies it into localMessage
@@ -159,8 +105,6 @@ void ComponentBase::Task()			//The component's main function
 				localMessage.command == COMMAND_ROBOT_STATE_TEST ||
 				localMessage.command == COMMAND_ROBOT_STATE_UNKNOWN)
 		{
-			printf("calling OnStateChange\n");
-
 			OnStateChange();			//Handles state changes
 		}
 

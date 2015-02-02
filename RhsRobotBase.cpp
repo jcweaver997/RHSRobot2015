@@ -2,6 +2,8 @@
  * The RhsRobotBase class is an extension to RobotBase and provides basic robot functionality.
  */
 
+#include <assert.h>
+
 //Built-In
 
 #include "WPILib.h"			//For the RobotBase class, the watchdog, SmartDashboard, and the DriverStationLCD class
@@ -19,7 +21,8 @@ RhsRobotBase::RhsRobotBase()			//Constructor
 
 	previousRobotState = ROBOT_STATE_UNKNOWN;
 	currentRobotState = ROBOT_STATE_UNKNOWN;
-
+	//TODO call function to turn off watchdog
+	SmartDashboard::init();
 	loop = 0;			//Initializes the loop counter
 }
 
@@ -58,10 +61,8 @@ void RhsRobotBase::StartCompetition()			//Robot's main function
 		if(!pDS->IsNewControlData())
 		{
 			usleep(1000);
-			printf("No new data\n");
 			continue;
 		}
-		//pDS->WaitForData();
 
 		//Checks the current state of the robot
 		if(IsDisabled())

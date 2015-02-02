@@ -12,6 +12,8 @@
 //Robot
 #include "Drivetrain.h"
 #include "Autonomous.h"
+#include "Conveyor.h"
+#include "Clicker.h"
 
 class RhsRobot : public RhsRobotBase
 {
@@ -24,6 +26,8 @@ private:
 	Joystick* Controller_2;
 	Drivetrain* drivetrain;
 	Autonomous* autonomous;
+	Conveyor* conveyor;
+	Clicker* clicker;
 	
 	void Init();
 	void OnStateChange();
