@@ -1,0 +1,98 @@
+/*
+ * The JackClicker component class handles the pallet jack's tote lifting
+ */
+
+#include "WPILib.h"
+
+//Robot
+#include "ComponentBase.h"
+#include "RobotParams.h"
+
+//Local
+#include "JackClicker.h"
+
+JackClicker::JackClicker()
+: ComponentBase(JACKCLICKER_TASKNAME, JACKCLICKER_QUEUE, JACKCLICKER_PRIORITY)
+{
+	pthread_attr_t attr;
+	taskID = 0;
+
+	clickerMotor = new CANTalon(CAN_PALLET_JACK_TOTE_LIFT);
+	clickerMotor->SetVoltageRampRate(120.0);
+	clickerMotor->ConfigNeutralMode(CANSpeedController::NeutralMode::kNeutralMode_Brake);
+	clickerMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
+
+	printf("Starting %s thread listening to %s\n", JACKCLICKER_TASKNAME,
+			JACKCLICKER_QUEUE);
+
+	// set thread attributes to default values
+    pthread_attr_init(&attr);
+    // we do not wait for threads to exit
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    // each thread has a unique scheduling algorithm
+    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+
+    pthread_create(&taskID, &attr, &JackClicker::StartTask, this);
+    pthread_setname_np(taskID, JACKCLICKER_TASKNAME);
+
+};
+
+JackClicker::~JackClicker()
+{
+	pthread_cancel(taskID);
+};
+
+void JackClicker::OnStateChange()
+{
+	switch (localMessage.command)
+	{
+		case COMMAND_ROBOT_STATE_AUTONOMOUS:
+			clickerMotor->Set(0.0);
+			break;
+
+		case COMMAND_ROBOT_STATE_TEST:
+			clickerMotor->Set(0.0);
+			break;
+
+		case COMMAND_ROBOT_STATE_TELEOPERATED:
+			clickerMotor->Set(0.0);
+			break;
+
+		case COMMAND_ROBOT_STATE_DISABLED:
+			clickerMotor->Set(0.0);
+			break;
+
+		case COMMAND_ROBOT_STATE_UNKNOWN:
+			clickerMotor->Set(0.0);
+			break;
+
+		default:
+			clickerMotor->Set(0.0);
+			break;
+	}
+};
+
+void JackClicker::Run()
+{
+	switch(localMessage.command)
+	{
+		case COMMAND_JACKCLICKER_RAISE:
+			clickerMotor->Set(0.10);		// the spring will help it up
+			break;
+
+		case COMMAND_JACKCLICKER_LOWER:
+			clickerMotor->Set(-1.0);
+			break;
+
+		case COMMAND_JACKCLICKER_STOP:
+			clickerMotor->Set(0.0);
+			break;
+
+		default:
+			break;
+		}
+
+	//TODO: add timeout support for tote motor just in case the sensors fail
+
+
+};

@@ -24,6 +24,9 @@ public:
 private:
 	pthread_t taskID;
 	CANTalon *conveyorMotor;
+	CANTalon *intakeLeftMotor;
+	CANTalon *intakeRightMotor;
+
 	void OnStateChange();
 	void Run();
 };

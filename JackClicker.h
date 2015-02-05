@@ -1,6 +1,5 @@
-
-#ifndef CLICKER_H
-#define CLICKER_H
+#ifndef JACKCLICKER_H
+#define JACKCLICKER_H
 
 #include <pthread.h>
 
@@ -10,22 +9,20 @@
 //WPILib
 #include "WPILib.h"
 
-class Clicker : public ComponentBase
+class JackClicker : public ComponentBase
 {
 public:
-	Clicker();
-	virtual ~Clicker();
+	JackClicker();
+	virtual ~JackClicker();
 	static void *StartTask(void *pThis)
 	{
-		((Clicker *)pThis)->Task();
+		((JackClicker *)pThis)->Task();
 		return(NULL);
 	}
 
 private:
 	pthread_t taskID;
 	CANTalon *clickerMotor;
-	CANTalon *intakeMotor;
-	bool bEnableAutoCycle;
 
 	//All Cube sensors are connected to the Talons, and are thus not
 	// represented in the code.
@@ -33,4 +30,4 @@ private:
 	void Run();
 };
 
-#endif			//CLICKER_H
+#endif			//JACKCLICKER_H

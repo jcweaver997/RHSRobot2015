@@ -28,8 +28,8 @@ Drivetrain::Drivetrain() :
 	rightMotor = new CANTalon(CAN_DRIVETRAIN_RIGHT_MOTOR);
 	leftMotor->SetControlMode(CANSpeedController::kPercentVbus);
 	rightMotor->SetControlMode(CANSpeedController::kPercentVbus);
-	//leftMotor->SetVoltageRampRate(24.0);
-	//rightMotor->SetVoltageRampRate(24.0);
+	leftMotor->SetVoltageRampRate(120.0);
+	rightMotor->SetVoltageRampRate(120.0);
 
 
 	assert(leftMotor && rightMotor);
@@ -40,11 +40,6 @@ Drivetrain::Drivetrain() :
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	// each thread has a unique scheduling algorithm
 	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-	// we'll force the priority of threads or tasks
-	//pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-	// we'll use static real time priority levels
-	//schedparam.sched_priority = priority;
-	//pthread_attr_setschedparam(&attr, &schedparam);
 
 	printf("Starting %s thread listening to %s\n", DRIVETRAIN_TASKNAME,
 			DRIVETRAIN_QUEUE);
@@ -70,21 +65,33 @@ void Drivetrain::OnStateChange()			//Handles state changes
 {
 	switch (localMessage.command) {
 	case COMMAND_ROBOT_STATE_AUTONOMOUS:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 
 	case COMMAND_ROBOT_STATE_TEST:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 
 	case COMMAND_ROBOT_STATE_TELEOPERATED:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 
 	case COMMAND_ROBOT_STATE_DISABLED:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 
 	case COMMAND_ROBOT_STATE_UNKNOWN:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 
 	default:
+		leftMotor->Set(0.0);
+		rightMotor->Set(0.0);
 		break;
 	}
 }
@@ -92,13 +99,8 @@ void Drivetrain::OnStateChange()			//Handles state changes
 void Drivetrain::Run() {
 	switch (localMessage.command) {
 	case COMMAND_DRIVETRAIN_DRIVE_TANK:
-		if ((GetLoop() % 100) == 0)
-			printf("left %f, right %f\n", localMessage.params.tankDrive.left,
-					localMessage.params.tankDrive.right);
 		leftMotor->Set(pow(localMessage.params.tankDrive.left, 3));
 		rightMotor->Set(-pow(localMessage.params.tankDrive.right, 3));
-		//TankDrive(pow(localMessage.params.tankDrive.left, 3),
-		//pow(localMessage.params.tankDrive.right, 3));
 		break;
 
 	case COMMAND_SYSTEM_MSGTIMEOUT:

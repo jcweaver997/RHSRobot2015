@@ -14,6 +14,8 @@
 #include "Autonomous.h"
 #include "Conveyor.h"
 #include "Clicker.h"
+#include "JackClicker.h"
+#include "CanLifter.h"
 
 class RhsRobot : public RhsRobotBase
 {
@@ -28,6 +30,8 @@ private:
 	Autonomous* autonomous;
 	Conveyor* conveyor;
 	Clicker* clicker;
+	JackClicker* jackclicker;
+	CanLifter* canlifter;
 	
 	void Init();
 	void OnStateChange();

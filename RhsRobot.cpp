@@ -5,7 +5,6 @@
 #include "RobotParams.h"
 
 //Robot
-#include "Drivetrain.h"
 #include "RhsRobot.h"
 
 RhsRobot::RhsRobot()
@@ -16,6 +15,8 @@ RhsRobot::RhsRobot()
 	autonomous = NULL;
 	conveyor = NULL;
     clicker = NULL;
+    jackclicker = NULL;
+    canlifter = NULL;
 
 	iLoop = 0;
 }
@@ -33,6 +34,8 @@ RhsRobot::~RhsRobot()
 	delete drivetrain;
 	delete conveyor;
 	delete clicker;
+	delete jackclicker;
+	delete canlifter;
 }
 
 void RhsRobot::Init()			//Initializes the robot
@@ -46,6 +49,9 @@ void RhsRobot::Init()			//Initializes the robot
 	Controller_2 = new Joystick(1);
 	drivetrain = new Drivetrain(); 
 	conveyor = new Conveyor();
+	clicker = new Clicker();
+	jackclicker = new JackClicker();
+	canlifter = new CanLifter();
 	//autonomous = new Autonomous();
 }
 
@@ -73,9 +79,19 @@ void RhsRobot::OnStateChange()			//Handles state changes
 	{
 		clicker->SendMessage(&robotMessage);
 	}
+
+	if(jackclicker)
+	{
+		jackclicker->SendMessage(&robotMessage);
+	}
+
+	if(canlifter)
+	{
+		canlifter->SendMessage(&robotMessage);
+	}
 }
 
-void RhsRobot::Run()			//Robot logic
+void RhsRobot::Run()
 {	
 	//SmartDashboard::PutString("ROBOT STATUS", "Running");
 	/* Poll for control data and send messages to each subsystem. Surround blocks with if(component) so entire components can be disabled
@@ -107,15 +123,15 @@ void RhsRobot::Run()			//Robot logic
 	{
 		if(CONVEYOR_FWD)
 		{
-			robotMessage.command = COMMAND_CONVEYOR_RUN_FWD;
+			robotMessage.command = COMMAND_CONVEYOR_RUNALL_FWD;
 		}
 		else if(CONVEYOR_BCK)
 		{
-			robotMessage.command = COMMAND_CONVEYOR_RUN_BCK;
+			robotMessage.command = COMMAND_CONVEYOR_RUNALL_BCK;
 		}
 		else
 		{
-			robotMessage.command = COMMAND_CONVEYOR_STOP;
+			robotMessage.command = COMMAND_CONVEYOR_RUNALL_STOP;
 		}
 
 		conveyor->SendMessage(&robotMessage);
@@ -123,10 +139,20 @@ void RhsRobot::Run()			//Robot logic
 
 	if(clicker)
 	{
+		//TODO: assign input controls to the clicker
+	}
 
+	if(jackclicker)
+	{
+		//TODO: assign input controls to the pallet jack clicker
+	}
+
+	if(canlifter)
+	{
+		//TODO: assign input controls to the cube can lifter
 	}
 
 	iLoop++;
 }
 
-START_ROBOT_CLASS(RhsRobot)			//Spawns an instance of the RhsRobot class
+START_ROBOT_CLASS(RhsRobot)
