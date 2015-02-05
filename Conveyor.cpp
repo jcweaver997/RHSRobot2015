@@ -143,16 +143,16 @@ void Conveyor::Run() {
 
 	case COMMAND_CONVEYOR_RUNALL_FWD:
 		conveyorMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SrxDisableSwitchInputs);
-		conveyorMotor->Set(1.0);
-		intakeLeftMotor->Set(1.0);
-		intakeRightMotor->Set(-1.0);
+		conveyorMotor->Set(-1.0);
+		intakeLeftMotor->Set(.65);
+		intakeRightMotor->Set(-.65);
 		break;
 
 	case COMMAND_CONVEYOR_RUNALL_BCK:
 		conveyorMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
-		conveyorMotor->Set(-1.0);
-		intakeLeftMotor->Set(-1.0);
-		intakeRightMotor->Set(1.0);
+		conveyorMotor->Set(1.0);
+		intakeLeftMotor->Set(-.65);
+		intakeRightMotor->Set(.65);
 		break;
 
 	case COMMAND_CONVEYOR_RUNALL_STOP:
