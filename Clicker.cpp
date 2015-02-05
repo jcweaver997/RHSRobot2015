@@ -110,6 +110,7 @@ void Clicker::Run()
 
 	if(localMessage.command == COMMAND_CUBEAUTOCYCLE_START){
 		bEnableAutoCycle = true;
+		LastState = STATE_CUBECLICKER_TOP;
 	}
 	if(localMessage.command == COMMAND_CUBEAUTOCYCLE_STOP){
 		bEnableAutoCycle = false;
@@ -165,6 +166,29 @@ void Clicker::Run()
 	break;
 
 	}
+	else{ // non auto cycle
+		switch (localMessage.command){
+		case COMMAND_CUBECLICKER_RAISE:
+			clickerMotor->Set(1);
+			break;
+		case COMMAND_CUBECLICKER_LOWER:
+			clickerMotor->Set(-1);
+			break;
+		case COMMAND_CUBECLICKER_STOP:
+			clickerMotor->Set(0);
+			break;
+		case COMMAND_CUBEINTAKE_RUN:
+			intakeMotor->Set(1);
+			break;
+		case COMMAND_CUBEINTAKE_STOP:
+			intakeMotor->Set(0);
+			break;
+		default:
+			break;
+		}
+
+	}
+
 
 };
 void Clicker::Top()

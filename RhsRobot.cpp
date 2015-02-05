@@ -139,6 +139,10 @@ void RhsRobot::Run()
 
 	if(clicker)
 	{
+		//robotMessage.command = COMMAND_CUBEAUTOCYCLE_START;
+		//clicker->SendMessage(&robotMessage);
+
+		// Not much room for clicker control with single L310
 		//TODO: assign input controls to the clicker
 	}
 
