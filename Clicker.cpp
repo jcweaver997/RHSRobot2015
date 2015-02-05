@@ -11,6 +11,7 @@
 
 //Local
 #include "Clicker.h"
+#include <time.h>
 
 Clicker::Clicker()
 : ComponentBase(CLICKER_TASKNAME, CLICKER_QUEUE, CLICKER_PRIORITY)
@@ -95,42 +96,94 @@ void Clicker::OnStateChange()
 
 void Clicker::Run()
 {
-	switch(localMessage.command)			//Reads the message command
-	{
-		case COMMAND_CUBECLICKER_RAISE:
-			clickerMotor->Set(0.10);		// the spring will help it up
-			break;
 
-		case COMMAND_CUBECLICKER_LOWER:
-			clickerMotor->Set(-1.0);
-			break;
+	 // temp variables until we figure it out with the talons
+	bool irsens = true;
+	bool hallEffectTop = true;
+	bool hallEffectBottom = true;
 
-		case COMMAND_CUBECLICKER_STOP:
-			clickerMotor->Set(0.0);
-			break;
+	if(		(LastState == STATE_CUBECLICKER_RAISE || LastState == STATE_CUBECLICKER_LOWER) &&
+			CUBE_TIMEOUT >= (time(NULL)*1000-timeoutStartTime)){
+		// TODO What should happen when it times out?
+		return;
+	}
 
-		case COMMAND_CUBEINTAKE_RUN:
-			intakeMotor->Set(1.0);
-			break;
+	if(localMessage.command == COMMAND_CUBEAUTOCYCLE_START){
+		bEnableAutoCycle = true;
+	}
+	if(localMessage.command == COMMAND_CUBEAUTOCYCLE_STOP){
+		bEnableAutoCycle = false;
+	}
 
-		case COMMAND_CUBEINTAKE_STOP:
-			intakeMotor->Set(0.0);
-			break;
-
-		case COMMAND_CUBEAUTOCYCLE_START:
-			bEnableAutoCycle = true;
-			break;
-
-		case COMMAND_CUBEAUTOCYCLE_STOP:
-			bEnableAutoCycle = false;
-			break;
-
-		default:
-			break;
+	if(bEnableAutoCycle)
+	switch(LastState){
+	case STATE_CUBECLICKER_RAISE:
+		if(!hallEffectTop){
+			LastState = STATE_CUBECLICKER_RAISE;
+			Raise();
+		}else{
+			LastState = STATE_CUBECLICKER_TOP;
+			Top();
 		}
+		break;
+	case STATE_CUBECLICKER_LOWER:
+		if(!hallEffectBottom){
+			LastState = STATE_CUBECLICKER_LOWER;
+			Lower();
+		}else{
+			LastState = STATE_CUBECLICKER_BOTTOM;
+			Bottom();
+		}
+	break;
+	case STATE_CUBECLICKER_TOP:
+		if(irsens){
+			LastState = STATE_CUBECLICKER_LOWER;
+			timeoutStartTime = time(NULL) * 1000;
+			Lower();
+		}else{
+			LastState = STATE_CUBECLICKER_TOP;
+			Top();
+		}
+	break;
+	case STATE_CUBECLICKER_BOTTOM:
+		if(NumOfTotes == CUBE_MAX_TOTES){
+			if(irsens){
+				LastState = STATE_CUBECLICKER_TOP;
+				Top();
+			}else{
+				NumOfTotes = 1;
+				LastState = STATE_CUBECLICKER_RAISE;
+				timeoutStartTime = time(NULL) * 1000;
+				Raise();
+			}
+		}else{
+			NumOfTotes++;
+			LastState = STATE_CUBECLICKER_RAISE;
+			timeoutStartTime = time(NULL) * 1000;
+			Raise();
+		}
+	break;
 
-	//TODO: add timeout support for clicker motor just in case the sensors fail
+	}
 
-	//TODO: add state machine for auto cycling
-
+};
+void Clicker::Top()
+{
+	clickerMotor->Set(0);
+	intakeMotor->Set(1);
+};
+void Clicker::Bottom()
+{
+	clickerMotor->Set(0);
+	intakeMotor->Set(0);
+};
+void Clicker::Raise()
+{
+	clickerMotor->Set(1);
+	intakeMotor->Set(1);
+};
+void Clicker::Lower()
+{
+	clickerMotor->Set(-1);
+	intakeMotor->Set(0);
 };
