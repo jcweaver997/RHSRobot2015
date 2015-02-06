@@ -81,8 +81,9 @@ const int CAN_CUBE_BIN_LIFT = 9;
 //Relay Channels - Assigns names to Relay ports 1-8 on the Roborio
 //EXAMPLE: const int RLY_COMPRESSOR = 1;
 
-const int CUBE_MAX_TOTES = 6;
-const int CUBE_TIMEOUT = 2000; // in ms, accurate to ~20 ms
+const int CUBECLICKER_MAX_TOTES = 6;
+const int CUBECLICKER_MAX_AMPS = 20;
+const int CUBECLICKER_SAFETY_CHECKS = 10; // number of times a safety check is called per second
 
 //Digital I/O - Assigns names to Digital I/O ports 1-14 on the Roborio
 //EXAMPLE: const int PWM_DRIVETRAIN_ENCODER_RIGHT_A = 1;

@@ -35,7 +35,7 @@ private:
 	bool bEnableAutoCycle;
 	ClickerState LastState = STATE_CUBECLICKER_TOP;
 	int NumOfTotes = 1;
-	int timeoutStartTime;
+	int LastChecked;
 	//All Cube sensors are connected to the Talons, and are thus not
 	// represented in the code.
 	void OnStateChange();

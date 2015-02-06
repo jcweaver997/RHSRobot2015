@@ -102,11 +102,26 @@ void Clicker::Run()
 	bool hallEffectTop = true;
 	bool hallEffectBottom = true;
 
-	if(		(LastState == STATE_CUBECLICKER_RAISE || LastState == STATE_CUBECLICKER_LOWER) &&
-			CUBE_TIMEOUT >= (time(NULL)*1000-timeoutStartTime)){
-		// TODO What should happen when it times out?
-		return;
+	if(time(NULL)*1000 > (LastChecked+(1.0/CUBECLICKER_SAFETY_CHECKS*1000))){
+		LastChecked = time(NULL)*1000;
+		if(clickerMotor->GetOutputCurrent() > CUBECLICKER_MAX_AMPS){
+				switch(LastState){
+				case STATE_CUBECLICKER_RAISE:
+					LastState = STATE_CUBECLICKER_TOP;
+					Top();
+					break;
+				case STATE_CUBECLICKER_LOWER:
+					LastState = STATE_CUBECLICKER_BOTTOM;
+					Bottom();
+					break;
+				default:
+					Bottom();
+					break;
+				}
+				return;
+			}
 	}
+
 
 	if(localMessage.command == COMMAND_CUBEAUTOCYCLE_START){
 		bEnableAutoCycle = true;
@@ -139,7 +154,6 @@ void Clicker::Run()
 	case STATE_CUBECLICKER_TOP:
 		if(irsens){
 			LastState = STATE_CUBECLICKER_LOWER;
-			timeoutStartTime = time(NULL) * 1000;
 			Lower();
 		}else{
 			LastState = STATE_CUBECLICKER_TOP;
@@ -147,20 +161,18 @@ void Clicker::Run()
 		}
 	break;
 	case STATE_CUBECLICKER_BOTTOM:
-		if(NumOfTotes == CUBE_MAX_TOTES){
+		if(NumOfTotes == CUBECLICKER_MAX_TOTES){
 			if(irsens){
 				LastState = STATE_CUBECLICKER_TOP;
 				Top();
 			}else{
 				NumOfTotes = 1;
 				LastState = STATE_CUBECLICKER_RAISE;
-				timeoutStartTime = time(NULL) * 1000;
 				Raise();
 			}
 		}else{
 			NumOfTotes++;
 			LastState = STATE_CUBECLICKER_RAISE;
-			timeoutStartTime = time(NULL) * 1000;
 			Raise();
 		}
 	break;
