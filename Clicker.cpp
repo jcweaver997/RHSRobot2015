@@ -179,12 +179,37 @@ void Clicker::Run()
 
 	}
 	else{ // non auto cycle
+
 		switch (localMessage.command){
 		case COMMAND_CUBECLICKER_RAISE:
-			clickerMotor->Set(1);
+
+			hitBottom = false;
+			if(!hitTop){
+				if(hallEffectTop){
+					hitTop = true;
+					clickerMotor->Set(0);
+				}else{
+					clickerMotor->Set(1);
+				}
+			}else{
+				clickerMotor->Set(0);
+			}
+
 			break;
 		case COMMAND_CUBECLICKER_LOWER:
-			clickerMotor->Set(-1);
+
+			hitTop = false;
+			if(!hitBottom){
+				if(hallEffectBottom){
+					hitBottom = true;
+					clickerMotor->Set(0);
+				}else{
+					clickerMotor->Set(-1);
+				}
+			}else{
+				clickerMotor->Set(0);
+			}
+
 			break;
 		case COMMAND_CUBECLICKER_STOP:
 			clickerMotor->Set(0);

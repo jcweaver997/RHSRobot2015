@@ -33,6 +33,8 @@ private:
 	CANTalon *clickerMotor;
 	CANTalon *intakeMotor;
 	bool bEnableAutoCycle;
+	bool hitTop;
+	bool hitBottom;
 	ClickerState LastState = STATE_CUBECLICKER_TOP;
 	int NumOfTotes = 1;
 	int LastChecked;
