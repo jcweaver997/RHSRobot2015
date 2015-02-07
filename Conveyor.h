@@ -17,12 +17,11 @@ public:
 	virtual ~Conveyor();
 	static void *StartTask(void *pThis)
 	{
-		((Conveyor*)pThis)->Task();
+		((Conveyor*)pThis)->DoWork();
 		return(NULL);
 	}
 
 private:
-	pthread_t taskID;
 	CANTalon *conveyorMotor;
 	CANTalon *intakeLeftMotor;
 	CANTalon *intakeRightMotor;

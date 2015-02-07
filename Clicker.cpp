@@ -15,13 +15,12 @@
 Clicker::Clicker()
 : ComponentBase(CLICKER_TASKNAME, CLICKER_QUEUE, CLICKER_PRIORITY)
 {
-	pthread_attr_t attr;
-	taskID = 0;
 	bEnableAutoCycle = false;
 
 	// run the clicker motor in braking mode till it hits a limit switch
 
 	clickerMotor = new CANTalon(CAN_CUBE_CLICKER);
+	wpi_assert(clickerMotor);
 	clickerMotor->SetVoltageRampRate(120.0);
 	clickerMotor->ConfigNeutralMode(CANSpeedController::NeutralMode::kNeutralMode_Brake);
 	clickerMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
@@ -31,24 +30,15 @@ Clicker::Clicker()
 	intakeMotor = new CANTalon(CAN_CUBE_INTAKE);
 	intakeMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
 
-	printf("Starting %s thread listening to %s\n", CLICKER_TASKNAME,
-			CLICKER_QUEUE);
-
-	// set thread attributes to default values
-    pthread_attr_init(&attr);
-    // we do not wait for threads to exit
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    // each thread has a unique scheduling algorithm
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-    pthread_create(&taskID, &attr, &Clicker::StartTask, this);
-    pthread_setname_np(taskID, CLICKER_TASKNAME);
-
+	pTask = new Task(CLICKER_TASKNAME, (FUNCPTR) &Clicker::StartTask,
+			CLICKER_PRIORITY, CLICKER_STACKSIZE);
+	wpi_assert(pTask);
+	pTask->Start((int)this);
 };
 
 Clicker::~Clicker()
 {
-	pthread_cancel(taskID);
+	delete(pTask);
 };
 
 void Clicker::OnStateChange()

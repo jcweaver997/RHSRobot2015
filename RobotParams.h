@@ -16,16 +16,16 @@ const char* const ROBOT_VERSION =	"-1.0.0-Alpha";			//Version
 
 //Task Params - Defines component task priorites relative to the default priority.
 //EXAMPLE: const int DRIVETRAIN_PRIORITY = DEFAULT_PRIORITY -2;
-const int DEFAULT_PRIORITY = 0;
-const int COMPONENT_PRIORITY = DEFAULT_PRIORITY;
-const int DRIVETRAIN_PRIORITY = DEFAULT_PRIORITY;
-const int AUTONOMOUS_PRIORITY = DEFAULT_PRIORITY;
-const int AUTOEXEC_PRIORITY = DEFAULT_PRIORITY;
-const int AUTOPARSER_PRIORITY = DEFAULT_PRIORITY;
-const int CONVEYOR_PRIORITY = DEFAULT_PRIORITY;
-const int CLICKER_PRIORITY = DEFAULT_PRIORITY;
-const int JACKCLICKER_PRIORITY = DEFAULT_PRIORITY;
-const int CANLIFTER_PRIORITY = DEFAULT_PRIORITY;
+const int DEFAULT_PRIORITY = 150;
+const int COMPONENT_PRIORITY 	= DEFAULT_PRIORITY;
+const int DRIVETRAIN_PRIORITY 	= DEFAULT_PRIORITY;
+const int AUTONOMOUS_PRIORITY 	= DEFAULT_PRIORITY;
+const int AUTOEXEC_PRIORITY 	= DEFAULT_PRIORITY;
+const int AUTOPARSER_PRIORITY 	= DEFAULT_PRIORITY;
+const int CONVEYOR_PRIORITY 	= DEFAULT_PRIORITY;
+const int CLICKER_PRIORITY 		= DEFAULT_PRIORITY;
+const int JACKCLICKER_PRIORITY 	= DEFAULT_PRIORITY;
+const int CANLIFTER_PRIORITY 	= DEFAULT_PRIORITY;
 
 //Task Names - Used when you view the task list but used by the operating system
 //EXAMPLE: const char* DRIVETRAIN_TASKNAME = "tDrive";
@@ -38,6 +38,16 @@ const char* const CONVEYOR_TASKNAME		= "tConveyor";
 const char* const CLICKER_TASKNAME		= "tClick";
 const char* const JACKCLICKER_TASKNAME	= "tJackClick";
 const char* const CANLIFTER_TASKNAME	= "tCanLift";
+
+const int COMPONENT_STACKSIZE	= 0x10000;
+const int DRIVETRAIN_STACKSIZE	= 0x10000;
+const int AUTONOMOUS_STACKSIZE	= 0x10000;
+const int AUTOEXEC_STACKSIZE	= 0x10000;
+const int AUTOPARSER_STACKSIZE	= 0x10000;
+const int CONVEYOR_STACKSIZE	= 0x10000;
+const int CLICKER_STACKSIZE		= 0x10000;
+const int JACKCLICKER_STACKSIZE	= 0x10000;
+const int CANLIFTER_STACKSIZE	= 0x10000;
 
 //TODO change these variables throughout the code to PIPE instead  of QUEUE
 //Queue Names - Used when you want to open the message queue for any task

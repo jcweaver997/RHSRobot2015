@@ -14,32 +14,21 @@
 JackClicker::JackClicker()
 : ComponentBase(JACKCLICKER_TASKNAME, JACKCLICKER_QUEUE, JACKCLICKER_PRIORITY)
 {
-	pthread_attr_t attr;
-	taskID = 0;
-
 	clickerMotor = new CANTalon(CAN_PALLET_JACK_TOTE_LIFT);
+	wpi_assert(clickerMotor);
 	clickerMotor->SetVoltageRampRate(120.0);
 	clickerMotor->ConfigNeutralMode(CANSpeedController::NeutralMode::kNeutralMode_Brake);
 	clickerMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
 
-	printf("Starting %s thread listening to %s\n", JACKCLICKER_TASKNAME,
-			JACKCLICKER_QUEUE);
-
-	// set thread attributes to default values
-    pthread_attr_init(&attr);
-    // we do not wait for threads to exit
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    // each thread has a unique scheduling algorithm
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-    pthread_create(&taskID, &attr, &JackClicker::StartTask, this);
-    pthread_setname_np(taskID, JACKCLICKER_TASKNAME);
-
+	pTask = new Task(JACKCLICKER_TASKNAME, (FUNCPTR) &JackClicker::StartTask,
+			JACKCLICKER_PRIORITY, JACKCLICKER_STACKSIZE);
+	wpi_assert(pTask);
+	pTask->Start((int)this);
 };
 
 JackClicker::~JackClicker()
 {
-	pthread_cancel(taskID);
+	delete(pTask);
 };
 
 void JackClicker::OnStateChange()

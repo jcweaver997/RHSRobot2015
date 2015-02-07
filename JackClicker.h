@@ -16,12 +16,11 @@ public:
 	virtual ~JackClicker();
 	static void *StartTask(void *pThis)
 	{
-		((JackClicker *)pThis)->Task();
+		((JackClicker *)pThis)->DoWork();
 		return(NULL);
 	}
 
 private:
-	pthread_t taskID;
 	CANTalon *clickerMotor;
 
 	//All Cube sensors are connected to the Talons, and are thus not

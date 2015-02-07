@@ -20,43 +20,28 @@ using namespace std;
 Drivetrain::Drivetrain() :
 		ComponentBase(DRIVETRAIN_TASKNAME, DRIVETRAIN_QUEUE,
 				DRIVETRAIN_PRIORITY) {
-	pthread_attr_t attr;
-	int iError;
 
-	taskID = 0;
 	leftMotor = new CANTalon(CAN_DRIVETRAIN_LEFT_MOTOR);
 	rightMotor = new CANTalon(CAN_DRIVETRAIN_RIGHT_MOTOR);
+	wpi_assert(leftMotor && rightMotor);
 	leftMotor->SetControlMode(CANSpeedController::kPercentVbus);
 	rightMotor->SetControlMode(CANSpeedController::kPercentVbus);
 	leftMotor->SetVoltageRampRate(120.0);
 	rightMotor->SetVoltageRampRate(120.0);
 
+	gyro = new ADXRS453Z;
+	wpi_assert(gyro);
+	gyro->Start();
 
-	assert(leftMotor && rightMotor);
-
-	// set thread attributes to default values
-	pthread_attr_init(&attr);
-	// we do not wait for threads to exit
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	// each thread has a unique scheduling algorithm
-	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-	printf("Starting %s thread listening to %s\n", DRIVETRAIN_TASKNAME,
-			DRIVETRAIN_QUEUE);
-
-	iError = pthread_create(&taskID, &attr, &Drivetrain::StartTask, this);
-
-	if (iError) {
-		printf("pthread_create: error = %d\n", iError);
-		assert(iError == 0);
-	}
-	pthread_setname_np(taskID, DRIVETRAIN_TASKNAME);
+	pTask = new Task(DRIVETRAIN_TASKNAME, (FUNCPTR) &Drivetrain::StartTask,
+			DRIVETRAIN_PRIORITY, DRIVETRAIN_STACKSIZE);
+	wpi_assert(pTask);
+	pTask->Start((int)this);
 }
 
 Drivetrain::~Drivetrain()			//Destructor
 {
-	pthread_cancel(taskID);
-
+	delete(pTask);
 	delete leftMotor;
 	delete rightMotor;
 }
@@ -107,5 +92,6 @@ void Drivetrain::Run() {
 	default:
 		break;
 	}
+
 }
 

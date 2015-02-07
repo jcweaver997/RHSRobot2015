@@ -17,12 +17,11 @@ public:
 	virtual ~Clicker();
 	static void *StartTask(void *pThis)
 	{
-		((Clicker *)pThis)->Task();
+		((Clicker *)pThis)->DoWork();
 		return(NULL);
 	}
 
 private:
-	pthread_t taskID;
 	CANTalon *clickerMotor;
 	CANTalon *intakeMotor;
 	bool bEnableAutoCycle;

@@ -17,12 +17,11 @@ public:
 	virtual ~Component();
 	static void *StartTask(void *pThis)
 	{
-		((Component *)pThis)->Task();
+		((Component *)pThis)->DoWork();
 		return(NULL);
 	}
 
 private:
-	pthread_t taskID;
 	void OnStateChange();
 	void Run();
 };

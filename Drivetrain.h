@@ -12,6 +12,8 @@
 
 //WPILib
 #include "WPILib.h"
+#include "ADXRS453Z.h"
+
 
 const float JOYSTICK_DEADZONE = 0.10;
 const float MAX_GAIN_PER_MESSAGE = 0.1;
@@ -23,13 +25,13 @@ public:
 	~Drivetrain();
 	static void *StartTask(void *pThis)
 	{
-		((Drivetrain *)pThis)->Task();
+		((Drivetrain *)pThis)->DoWork();
 		return(NULL);
 	}
 private:
-	pthread_t taskID;
 	CANTalon* leftMotor;
 	CANTalon* rightMotor;
+	ADXRS453Z *gyro;
 
 	void OnStateChange();
 	void Run();
