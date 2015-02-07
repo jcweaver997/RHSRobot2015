@@ -22,7 +22,6 @@ public:
 	}
 
 private:
-<<<<<<< HEAD
 	enum ClickerState{
 		STATE_CUBECLICKER_RAISE,
 		STATE_CUBECLICKER_LOWER,
@@ -30,9 +29,6 @@ private:
 		STATE_CUBECLICKER_BOTTOM
 	};
 
-	pthread_t taskID;
-=======
->>>>>>> 6b48a868a32f3b5fc31c34acdaa49d65d461d6a0
 	CANTalon *clickerMotor;
 	CANTalon *intakeMotor;
 	bool bEnableAutoCycle;
