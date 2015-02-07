@@ -18,6 +18,8 @@
 #include <iostream>
 using namespace std;
 
+#include "WPILib.h"
+
 //Robot
 #include "RobotMessage.h"			//For the RobotMessage struct
 
@@ -27,7 +29,7 @@ public:
 	ComponentBase(const char* componentName, const char *queueName, int priority);
 	virtual ~ComponentBase() {};
 
-	void Task();
+	void DoWork();
 	void SendMessage(RobotMessage* robotMessage);
 	void ClearMessages();
 
@@ -35,7 +37,9 @@ public:
 	int GetLoop() { return(iLoop); };
 
 protected:
+	Task *pTask;
 	RobotMessage localMessage;
+	int iLoop;
 	
 	virtual void OnStateChange() = 0;
 	virtual void Run() = 0;
@@ -45,7 +49,6 @@ private:
 	string queueLocal;
 	int iPipeRcv;
 	int iPipeXmt;
-	int iLoop;
 
 	void ReceiveMessage();
 };

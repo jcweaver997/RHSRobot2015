@@ -89,7 +89,7 @@ void ComponentBase::ClearMessages(void)
 	localMessage.command = COMMAND_SYSTEM_MSGTIMEOUT;
 }
 
-void ComponentBase::Task()			//The component's main function
+void ComponentBase::DoWork()
 {
 	int iLast;
 

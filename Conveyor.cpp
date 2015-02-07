@@ -14,36 +14,28 @@
 Conveyor::Conveyor() :
 		ComponentBase(CONVEYOR_TASKNAME, CONVEYOR_QUEUE,
 				CONVEYOR_PRIORITY) {
-	pthread_attr_t attr;
-	taskID = 0;
-
 	conveyorMotor = new CANTalon(CAN_PALLET_JACK_CONVEYOR);
+	wpi_assert(conveyorMotor);
 	conveyorMotor->SetControlMode(CANSpeedController::kPercentVbus);
 	conveyorMotor->SetVoltageRampRate(120.0);
 	conveyorMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
 
 	intakeLeftMotor = new CANTalon(CAN_PALLET_JACK_INTAKE_VERTICAL_LEFT);
+	wpi_assert(intakeLeftMotor);
 	intakeLeftMotor->SetControlMode(CANSpeedController::kPercentVbus);
 
 	intakeRightMotor = new CANTalon(CAN_PALLET_JACK_INTAKE_VERTICAL_RIGHT);
+	wpi_assert(intakeRightMotor);
 	intakeRightMotor->SetControlMode(CANSpeedController::kPercentVbus);
 
-	printf("Starting %s thread listening to %s\n", CONVEYOR_TASKNAME,
-			CONVEYOR_QUEUE);
-
-	// set thread attributes to default values
-	pthread_attr_init(&attr);
-	// we do not wait for threads to exit
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	// each thread has a unique scheduling algorithm
-	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-	pthread_create(&taskID, &attr, &Conveyor::StartTask, this);
-	pthread_setname_np(taskID, CONVEYOR_TASKNAME);
+	pTask = new Task(CONVEYOR_TASKNAME, (FUNCPTR) &Conveyor::StartTask,
+			CONVEYOR_PRIORITY, CONVEYOR_STACKSIZE);
+	wpi_assert(pTask);
+	pTask->Start((int)this);
 }
 
 Conveyor::~Conveyor() {
-	pthread_cancel(taskID);
+	delete(pTask);
 }
 
 void Conveyor::OnStateChange() {

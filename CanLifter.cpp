@@ -14,32 +14,21 @@
 CanLifter::CanLifter()
 : ComponentBase(CANLIFTER_TASKNAME, CANLIFTER_QUEUE, CANLIFTER_PRIORITY)
 {
-	pthread_attr_t attr;
-	taskID = 0;
-
 	lifterMotor = new CANTalon(CAN_CUBE_BIN_LIFT);
+	wpi_assert(lifterMotor);
 	lifterMotor->SetVoltageRampRate(120.0);
 	lifterMotor->ConfigNeutralMode(CANSpeedController::NeutralMode::kNeutralMode_Brake);
 	lifterMotor->ConfigLimitMode(CANSpeedController::kLimitMode_SwitchInputsOnly);
 
-	printf("Starting %s thread listening to %s\n", CANLIFTER_TASKNAME,
-			CANLIFTER_QUEUE);
-
-	// set thread attributes to default values
-    pthread_attr_init(&attr);
-    // we do not wait for threads to exit
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    // each thread has a unique scheduling algorithm
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-    pthread_create(&taskID, &attr, &CanLifter::StartTask, this);
-    pthread_setname_np(taskID, CANLIFTER_TASKNAME);
-
+	pTask = new Task(CANLIFTER_TASKNAME, (FUNCPTR) &CanLifter::StartTask,
+			CANLIFTER_PRIORITY, CANLIFTER_STACKSIZE);
+	wpi_assert(pTask);
+	pTask->Start((int)this);
 };
 
 CanLifter::~CanLifter()
 {
-	pthread_cancel(taskID);
+	delete(pTask);
 };
 
 void CanLifter::OnStateChange()

@@ -16,12 +16,11 @@ public:
 	virtual ~CanLifter();
 	static void *StartTask(void *pThis)
 	{
-		((CanLifter *)pThis)->Task();
+		((CanLifter *)pThis)->DoWork();
 		return(NULL);
 	}
 
 private:
-	pthread_t taskID;
 	CANTalon *lifterMotor;
 
 	//All Cube sensors are connected to the Talons, and are thus not
